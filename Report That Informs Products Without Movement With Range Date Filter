@@ -1,0 +1,66 @@
+SELECT
+     pcest.codfilial
+    ,pcprodut.codprod
+    ,pcprodut.descricao
+    ,pcprodut.dtcadastro
+    ,pcest.dtultent
+    ,pcest.dtultsaida
+    ,pcest.qtestger
+    ,pcest.qtindeniz AS qt_avaria
+    ,pcprodut.obs2 AS fl_203
+    ,pcprodfilial.foralinha AS fl_238
+    ,pcest.custoultent
+    ,(pcest.custoultent * pcest.qtestger) AS custo_total
+    ,pcprodut.codauxiliar
+    ,pcfornec.codfornec
+    ,pcfornec.fornecedor
+    ,DECODE(NVL(pcest.dtultsaida, TRUNC(pcprodut.dtcadastro)), TRUNC(SYSDATE), 0, (TRUNC(SYSDATE) - NVL(pcest.dtultsaida, pcest.dtultent))) AS numdiasmov
+
+FROM
+     pcprodut
+    ,pcest
+    ,pcfornec
+    ,pcdepto
+    ,pcprodfilial
+    ,pctabpr
+    ,pcfilial
+
+WHERE
+     pcprodut.codprod    = pcest.codprod
+ AND pcprodut.codfornec  = pcfornec.codfornec
+ AND pcprodut.codepto    = pcdepto.codepto
+ AND pcfilial.codigo     = pcest.codfilial
+ AND pcprodut.codprod    = pctabpr.codprod
+ AND pcprodut.codprod    = pcprodfilial.codprod
+ AND pcest.codfilial     = pcprodfilial.codfilial
+ AND pcest.qtestger      > (:qt)
+ AND pcest.codfilial     IN (:codfilial)
+ AND pcprodut.codfornec  IN (:codfornec)
+ AND pcprodut.obs2       IN (:fl)
+ AND (TRUNC(SYSDATE) - NVL(pcest.dtultsaida, NVL(pcest.dtultent, TRUNC(SYSDATE)))) >= (:dias)
+
+GROUP BY
+     pcest.codfilial
+    ,pcprodut.codprod
+    ,pcprodut.descricao
+    ,pcest.qtestger
+    ,pcest.dtultent
+    ,pcest.dtultsaida
+    ,pcprodut.obs2
+    ,pcest.custoultent
+    ,pcprodfilial.foralinha
+    ,pcest.qtreserv
+    ,pcest.qtindeniz
+    ,pcest.qtestger
+    ,pcprodut.codauxiliar
+    ,pcfornec.codfornec
+    ,pcfornec.fornecedor
+    ,pcest.dtultsaida
+    ,pcprodut.dtcadastro
+
+ORDER BY
+     pcest.codfilial
+    ,pcfornec.codfornec
+    ,pcprodut.codprod
+     
+     
