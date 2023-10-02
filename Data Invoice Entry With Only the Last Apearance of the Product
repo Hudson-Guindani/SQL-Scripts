@@ -1,0 +1,93 @@
+WITH dados AS (
+    SELECT
+         m.numnota
+        ,m.dtmov
+        ,m.codprod
+        ,m.descricao
+        ,m.codfilial
+        ,m.qt qtent
+        ,h.qtestger
+        ,m.qtestgerant
+        ,m.punitcont
+        ,m.pliqped
+        ,m.percicm
+        ,c.peracrescimofuncep
+        ,c.vlacrescimofuncep
+        ,m.percipi
+        ,m.vlipi
+        ,m.perpis
+        ,m.vlcredpis
+        ,m.percofins
+        ,m.vlcredcofins
+        ,m.percicmred
+        ,m.vlicmsbcr
+        ,m.percredicms
+        ,m.vlcredicms
+        ,m.percdescicmsdif
+        ,m.vldescicmsdif
+        ,m.percst
+        ,m.st
+        ,c.aliqicmsfecp
+        ,c.vlfecp
+        ,m.percdespforanf
+        ,m.vldespforanf
+        ,m.percoutroscustos
+        ,c.vloutroscustos
+        ,m.percdesc
+        ,m.vldesconto
+        ,m.percfrete
+        ,m.vlfrete
+        ,m.percoutrasdesp
+        ,m.vloutrasdesp
+        ,m.custorealant
+        ,m.custocont
+        ,m.custoreal
+        ,m.custofin
+        ,c.custoultentcont
+        ,m.custoultent
+        ,m.custoultentfin
+        ,p.codfornec
+        ,f.geracreddifpreco
+        ,ROW_NUMBER() OVER (PARTITION BY m.codprod ORDER BY m.dtmov DESC) AS rn
+
+    FROM
+               pcmov m
+    INNER JOIN pcprodut p
+         ON    m.codprod      = p.codprod
+    LEFT JOIN  pcmovcomple c
+         ON    m.numtransitem = c.numtransitem
+    LEFT JOIN  pcfornec f
+         ON    p.codfornec    = f.codfornec
+    LEFT JOIN  pchistest h
+         ON    h.codprod      = m.codprod
+         AND   m.dtmov        = h.data
+         AND   m.codfilial    = h.codfilial
+
+    WHERE
+         m.numtransent        > 0
+     AND c.custoultentcont    > 0
+     AND m.custoultent        > 0
+     AND m.custoultentfin     > 0
+     AND m.status             <> 'B'
+     AND m.codoper            = 'E'
+     AND p.obs2               = '  '
+     AND m.dtcancel           IS NULL
+     AND p.codprod            IN (:codprod)
+     AND m.numnota            IN (:numnota)
+     AND m.codfilial          IN (:codfilial)
+     AND m.codfornec          IN (:codfornec)
+     AND m.dtmov              BETWEEN (:dtini) AND (:dtfim)
+)
+
+SELECT
+  *
+
+FROM
+  dados d
+
+WHERE
+  rn = 1
+
+ORDER BY
+  numnota
+ ,codprod
